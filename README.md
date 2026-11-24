@@ -86,7 +86,7 @@ All UI text comes from the message catalogues in `messages/` (English: `messages
 
 ### PWA
 
-Little Nook is installable but online-only. The manifest is `src/app/manifest.ts`, icons live in `public/icons/` (plus `src/app/icon.svg`, `apple-icon.png` and `favicon.ico`), and the brand colours in `src/lib/brand.ts`. The service worker (`public/sw.js`, registered in production builds only) caches the app shell: the `/offline` page shown when a page can't load, and the build's static assets. It never caches page HTML or data and leaves non-GET requests alone. Bump its `VERSION` when the offline page changes.
+Little Nook is installable but online-only. The manifest is `src/app/manifest.ts`, icons live in `public/icons/` (plus `src/app/icon.svg`, `apple-icon.png` and `favicon.ico`), and the brand colours in `src/lib/brand.ts`. The service worker (`public/sw.js`, registered in production builds only) caches the app shell: the `/offline` page shown when a page can't load, and the build's static assets. It never caches page HTML or data and leaves non-GET requests alone. It is registered as `/sw.js?v=<build version>` (Vercel deployment ID, else the git commit; see `next.config.ts`), so each deploy installs a fresh worker and drops the previous build's caches.
 
 ### UI components
 

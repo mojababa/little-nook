@@ -57,3 +57,40 @@ test("app shell is served by the service worker when offline", async ({
   ).toBeVisible();
   await expect(page).toHaveURL("/privacy");
 });
+
+test("a new build replaces the previous build's cached app shell", async ({
+  page,
+}) => {
+  const activeWorkerUrl = () =>
+    page.evaluate(
+      async () =>
+        (await navigator.serviceWorker.getRegistration())?.active?.scriptURL,
+    );
+  const cacheNames = () => page.evaluate(() => caches.keys());
+
+  // A returning visitor whose browser still runs the worker of an earlier build.
+  await page.goto("/");
+  await page.evaluate(async () => {
+    await navigator.serviceWorker.ready;
+    await navigator.serviceWorker.register("/sw.js?v=previous-build", {
+      scope: "/",
+      updateViaCache: "none",
+    });
+  });
+  await expect.poll(activeWorkerUrl).toContain("v=previous-build");
+  await expect.poll(cacheNames).toContain("little-nook-shell-previous-build");
+
+  // Visiting the current build installs its worker, which drops the old shell.
+  await page.reload();
+  await expect.poll(activeWorkerUrl).not.toContain("v=previous-build");
+  const version = new URL((await activeWorkerUrl())!).searchParams.get("v");
+  expect(version).toBeTruthy();
+  // The new worker reports as active while it is still clearing old caches.
+  await expect
+    .poll(async () =>
+      (await cacheNames()).filter((name) =>
+        name.startsWith("little-nook-shell-"),
+      ),
+    )
+    .toEqual([`little-nook-shell-${version}`]);
+});

@@ -7,11 +7,11 @@
 // never cached, and non-GET requests (writes) are left alone: they fail
 // normally when offline and are never queued or replayed.
 //
-// Bump VERSION when the offline page changes (the worker script is otherwise
-// byte-identical across deploys, so browsers keep the old one); activating
-// the new worker drops the old caches.
+// The worker is registered as /sw.js?v=<build version>. A new build means a new
+// script URL, so the browser installs a new worker, which precaches that
+// build's offline page; activating it drops the previous build's caches.
 
-const VERSION = "v1";
+const VERSION = new URL(self.location.href).searchParams.get("v") ?? "local";
 const SHELL_CACHE = `little-nook-shell-${VERSION}`;
 const ASSET_CACHE = `little-nook-assets-${VERSION}`;
 const MAX_ASSET_ENTRIES = 150;
