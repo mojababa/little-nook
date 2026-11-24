@@ -1,11 +1,124 @@
 {
   "Metadata": {
     "title": "Little Nook",
+    "titleTemplate": "%s · Little Nook",
     "description": "Your crochet workshop in one place: supplies, patterns, projects and what they earn."
   },
-  "HomePage": {
+  "Manifest": {
+    "name": "Little Nook",
+    "shortName": "Little Nook",
+    "description": "Your crochet workshop in one place: supplies, patterns, projects and what they earn."
+  },
+  "PublicHeader": {
+    "home": "Little Nook",
+    "logIn": "Log in"
+  },
+  "PublicFooter": {
+    "label": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "copyright": "© Little Nook"
+  },
+  "LandingPage": {
     "title": "Little Nook",
     "tagline": "Your crochet workshop in one place.",
-    "comingSoon": "We're still setting up the workshop. Check back soon."
+    "description": "Keep track of your yarn and supplies, write up patterns row by row, follow every project from wishlist to sold, and see what your work really costs and earns.",
+    "signUp": "Sign up",
+    "logIn": "Log in",
+    "featuresTitle": "Everything your hobby needs",
+    "features": {
+      "inventory": {
+        "title": "Inventory",
+        "body": "See every skein, hook and safety eye at a glance, with stock levels, costs and low-stock alerts."
+      },
+      "patterns": {
+        "title": "Patterns",
+        "body": "Write patterns in standard crochet notation, part by part, and keep PDFs, photos and video links alongside."
+      },
+      "projects": {
+        "title": "Projects",
+        "body": "Move pieces across your board, tick off rows, bookmark where you stopped and time your work."
+      },
+      "finances": {
+        "title": "Offers & finances",
+        "body": "Get a suggested price from materials and hours, and see spending, income and profit per piece."
+      }
+    },
+    "install": "Add Little Nook to your phone's home screen to keep it next to your crochet work."
+  },
+  "PrivacyPage": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: 24 November 2026",
+    "intro": "This policy explains what information Little Nook collects when you use it, why, and what you can do about it.",
+    "sections": {
+      "collect": {
+        "title": "What we collect",
+        "body": "Your account details (name, email address, password hash and, if you choose, a profile picture or a linked Google account) and everything you enter into your workspace: supplies, patterns, projects, photos, files, offers and transactions."
+      },
+      "use": {
+        "title": "How we use it",
+        "body": "Only to run Little Nook for you: to sign you in, store and show your workspace, send account emails such as verification and password reset, and keep the service secure. We do not sell your data or use it for advertising."
+      },
+      "cookies": {
+        "title": "Cookies and local storage",
+        "body": "We use only the cookies needed to keep you signed in and remember your preferences. The installed app caches its own code and images on your device so it opens quickly; it does not store your workspace data offline."
+      },
+      "sharing": {
+        "title": "Who we share it with",
+        "body": "Your data is processed by the providers that host the app, its database and file storage, and send its emails, and by Google if you sign in with Google. They handle it only on our behalf."
+      },
+      "retention": {
+        "title": "How long we keep it",
+        "body": "We keep your data for as long as your account exists. When you delete your account, your workspace and everything in it is deleted."
+      },
+      "rights": {
+        "title": "Your choices",
+        "body": "You can view and edit your data in the app at any time, change your email address or password, unlink Google, sign out of all devices and delete your account with all its data."
+      },
+      "changes": {
+        "title": "Changes to this policy",
+        "body": "If we change this policy we will update the date above, and tell you in the app if the change is significant."
+      }
+    }
+  },
+  "TermsPage": {
+    "title": "Terms of Service",
+    "lastUpdated": "Last updated: 24 November 2026",
+    "intro": "These terms apply when you create an account or use Little Nook. By using it, you agree to them.",
+    "sections": {
+      "account": {
+        "title": "Your account",
+        "body": "You need a valid email address to sign up. Keep your password safe; you are responsible for what happens in your account."
+      },
+      "content": {
+        "title": "Your content",
+        "body": "What you put in your workspace stays yours. You give us permission to store and display it only so that we can provide the service to you. Only upload patterns, images and files you have the right to use."
+      },
+      "use": {
+        "title": "Acceptable use",
+        "body": "Don't use Little Nook to break the law, to infringe other people's rights, or to disrupt or try to gain unauthorised access to the service."
+      },
+      "service": {
+        "title": "The service",
+        "body": "Little Nook needs an internet connection. We work to keep it available and your data safe, but the service is provided as is, and we may change or discontinue features."
+      },
+      "liability": {
+        "title": "Responsibility",
+        "body": "Prices, costs and stock figures in Little Nook are estimates based on what you enter. Check them before relying on them for business decisions. To the extent the law allows, we are not liable for indirect losses."
+      },
+      "ending": {
+        "title": "Ending your use",
+        "body": "You can stop using Little Nook and delete your account at any time. We may suspend accounts that break these terms."
+      },
+      "changes": {
+        "title": "Changes to these terms",
+        "body": "If we change these terms we will update the date above, and tell you in the app if the change is significant."
+      }
+    }
+  },
+  "OfflinePage": {
+    "title": "You're offline",
+    "body": "Little Nook needs an internet connection. Check your connection and try again.",
+    "retry": "Try again"
   }
 }

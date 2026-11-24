@@ -84,6 +84,10 @@ export async function renameWorkspace(
 
 All UI text comes from the message catalogues in `messages/` (English: `messages/en.json`) via next-intl: `useTranslations` / `getTranslations`. Message keys are type-checked against the English catalogue. There is no locale routing; the locale will come from the user's saved preference (see `src/i18n/request.ts`).
 
+### PWA
+
+Little Nook is installable but online-only. The manifest is `src/app/manifest.ts`, icons live in `public/icons/` (plus `src/app/icon.svg`, `apple-icon.png` and `favicon.ico`), and the brand colours in `src/lib/brand.ts`. The service worker (`public/sw.js`, registered in production builds only) caches the app shell: the `/offline` page shown when a page can't load, and the build's static assets. It never caches page HTML or data and leaves non-GET requests alone. It is registered as `/sw.js?v=<build version>` (Vercel deployment ID, else the git commit; see `next.config.ts`), so each deploy installs a fresh worker and drops the previous build's caches.
+
 ### UI components
 
 shadcn/ui components are added with `pnpm dlx shadcn@latest add <component>` and live in `src/components/ui/`.
