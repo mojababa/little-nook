@@ -54,7 +54,10 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: ./.github/actions/setup
-      - name: Apply migrations
+      # The tests rebuild the database themselves; this checks that the
+      # committed migrations also apply through drizzle-kit (`pnpm db:migrate`),
+      # the path deployments use.
+      - name: Check migrations apply with drizzle-kit
         run: pnpm db:migrate
       - run: pnpm test
 
