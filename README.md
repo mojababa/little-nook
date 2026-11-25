@@ -22,10 +22,17 @@ Compose publishes Postgres on port **5433** so it doesn't clash with a locally i
 
 ### Environment variables
 
-| Variable            | Used by                                             |
-| ------------------- | --------------------------------------------------- |
-| `DATABASE_URL`      | The app and `pnpm db:*` scripts                     |
-| `TEST_DATABASE_URL` | Integration tests (rebuilt from migrations per run) |
+| Variable             | Used by                                                                            |
+| -------------------- | ---------------------------------------------------------------------------------- |
+| `DATABASE_URL`       | The app, `pnpm db:*` scripts and E2E                                               |
+| `TEST_DATABASE_URL`  | Integration tests (rebuilt from migrations per run)                                |
+| `BETTER_AUTH_SECRET` | Signs sessions and email links (required at runtime)                               |
+| `BETTER_AUTH_URL`    | The app's public origin; defaults to the Vercel deployment URL, else `localhost`   |
+| `RESEND_API_KEY`     | Sends verification and password-reset email through Resend (required in prod)      |
+| `EMAIL_FROM`         | Sender address for that email, e.g. `Little Nook <hello@…>`                        |
+| `EMAIL_OUTBOX_DIR`   | Without Resend: write emails as JSON files here instead of printing them to stdout |
+
+Locally, without `RESEND_API_KEY`, verification and reset emails (with their links) are printed in the `pnpm dev` output.
 
 ## Database and migrations
 
@@ -53,7 +60,7 @@ Never edit an applied migration; generate a new one.
 | `pnpm test:integration` | Integration tests against Postgres (`src/**/*.int.test.ts`) |
 | `pnpm test:e2e`         | Playwright against a production build (builds first)        |
 
-Before the first `pnpm test:e2e`, install the browser: `pnpm exec playwright install chromium`.
+Before the first `pnpm test:e2e`, install the browser: `pnpm exec playwright install chromium`. E2E runs against `DATABASE_URL` (run `pnpm db:migrate` first) and signs up throwaway `@example.test` users there; the server writes its emails to `.e2e-outbox/`, where the tests read their links.
 
 > **Windows:** run builds and E2E from the folder's real casing (e.g. `D:\Projekti\…`, not `D:\projekti\…`). A mismatched drive path makes the bundler load React twice and every page fails to prerender with “Invalid hook call”.
 
@@ -72,11 +79,18 @@ export async function renameWorkspace(
 
 - `WorkspaceContext` (`src/server/context.ts`) carries the database handle and the workspace id. Every query is scoped by `ctx.workspaceId`.
 - Expected refusals (validation, rule violations) return a `Result` (`src/server/result.ts`); unexpected failures throw.
-- Server actions and route handlers are thin adapters: derive the context from the session (`getDb()` from `@/db`), call the service, map the result to a response. No business logic in them.
+- Server actions and route handlers are thin adapters: derive the context from the session with `requireWorkspaceContext()` (`src/server/session.ts`), call the service, map the result to a response. No business logic in them.
+
+### Auth and workspaces
+
+- Better Auth (`src/server/auth/auth.ts`) handles email + password, email verification and password reset; its endpoints are served at `/api/auth/*` and called from the browser through `src/lib/auth-client.ts`. A session only exists for a verified user.
+- Signing up creates the user's personal workspace in the currency they picked, with them as `owner` (`workspace_members`). Every user has exactly one workspace for now; `workspaceContextForUser()` resolves it.
+- `src/proxy.ts` redirects app routes to `/login` when there is no session cookie, but that is only an optimisation. **Every page, server action and route handler that reads or changes data calls `requireUser()` or `requireWorkspaceContext()` itself**, because layouts don't re-render on client-side navigation. Under Cache Components, those calls read the request, so the components making them sit inside `<Suspense>`.
+- The app's sections are listed in `src/lib/app-sections.ts`; a new section also needs its path in the proxy matcher.
 
 ### Tests
 
-- **Integration tests** (`*.int.test.ts`, next to the module) call service functions against a real Postgres. Import `test` from `@tests/integration/fixtures`: it gives each test a fresh workspace as `ctx`. Use `createWorkspace()` for extra workspaces (e.g. isolation checks). The database is rebuilt from the committed migrations at the start of each run.
+- **Integration tests** (`*.int.test.ts`, next to the module) call service functions against a real Postgres. Import `test` from `@tests/integration/fixtures`: it gives each test a fresh workspace as `ctx`. Use `createWorkspace()` for extra workspaces (e.g. isolation checks). For auth flows, `createTestAuth()` gives an auth instance on the test database whose emails land in an in-memory `outbox`; sign up with `signUp()` and `uniqueEmail()`. The database is rebuilt from the committed migrations at the start of each run.
 - **Unit tests** (`*.test.ts`) are for pure modules with no database.
 - **E2E** (`e2e/*.spec.ts`) covers a few critical journeys only; business rules are tested at the service layer.
 

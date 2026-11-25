@@ -6,7 +6,12 @@ import { err, ok, type Result } from "@/server/result";
 
 export async function getWorkspace(ctx: WorkspaceContext) {
   const [workspace] = await ctx.db
-    .select({ id: workspaces.id, name: workspaces.name })
+    .select({
+      id: workspaces.id,
+      name: workspaces.name,
+      currency: workspaces.currency,
+      plan: workspaces.plan,
+    })
     .from(workspaces)
     .where(eq(workspaces.id, ctx.workspaceId));
   return workspace;

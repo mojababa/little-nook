@@ -1,22 +1,39 @@
-import { inArray } from "drizzle-orm";
+import { randomUUID } from "node:crypto";
+
+import { inArray, like } from "drizzle-orm";
 import { afterAll, test as base } from "vitest";
 
 import { createDb, type Db } from "@/db/client";
-import { workspaces } from "@/db/schema";
+import { users, workspaceMembers, workspaces } from "@/db/schema";
 import type { WorkspaceContext } from "@/server/context";
+import { createAuth } from "@/server/auth/auth";
+import type { Email } from "@/server/email/mailer";
 
 import { testDatabaseUrl } from "./test-database-url";
 
 let db: Db | undefined;
 const createdWorkspaceIds: string[] = [];
+// Test files run in parallel against one database, so each file only cleans up
+// the users it signed up: their emails carry this file's tag.
+const emailDomain = `${randomUUID()}.test`;
 
-function testDb(): Db {
+export function testDb(): Db {
   db ??= createDb(testDatabaseUrl());
   return db;
 }
 
 afterAll(async () => {
   if (!db) return;
+  const signedUp = db
+    .select({ id: users.id })
+    .from(users)
+    .where(like(users.email, `%@${emailDomain}`));
+  const theirWorkspaces = db
+    .select({ id: workspaceMembers.workspaceId })
+    .from(workspaceMembers)
+    .where(inArray(workspaceMembers.userId, signedUp));
+  await db.delete(workspaces).where(inArray(workspaces.id, theirWorkspaces));
+  await db.delete(users).where(like(users.email, `%@${emailDomain}`));
   if (createdWorkspaceIds.length) {
     await db
       .delete(workspaces)
@@ -35,10 +52,49 @@ export async function createWorkspace(
 ): Promise<WorkspaceContext> {
   const [workspace] = await testDb()
     .insert(workspaces)
-    .values({ name: "Test workspace", ...overrides })
+    .values({ name: "Test workspace", currency: "EUR", ...overrides })
     .returning({ id: workspaces.id });
   createdWorkspaceIds.push(workspace.id);
   return { db: testDb(), workspaceId: workspace.id };
+}
+
+/** A unique email address; its user is deleted when the test file finishes. */
+export function uniqueEmail(name = "maker"): string {
+  return `${name}-${randomUUID().slice(0, 8)}@${emailDomain}`;
+}
+
+export const testBaseUrl = "http://localhost:3000";
+
+/**
+ * An auth instance on the test database. Emails it sends land in `outbox`
+ * instead of being delivered.
+ */
+export function createTestAuth() {
+  const outbox: Email[] = [];
+  const auth = createAuth({
+    db: testDb(),
+    baseURL: testBaseUrl,
+    secret: "integration-test-secret-not-for-production",
+    mailer: {
+      async send(email) {
+        outbox.push(email);
+      },
+    },
+  });
+  return { auth, outbox };
+}
+
+type TestAuth = ReturnType<typeof createTestAuth>["auth"];
+
+/**
+ * Signs up through the auth API. `currency` is passed through to the sign-up
+ * hook, though Better Auth's body type doesn't declare it.
+ */
+export function signUp(
+  auth: TestAuth,
+  body: { name: string; email: string; password: string; currency?: string },
+) {
+  return auth.api.signUpEmail({ body });
 }
 
 /**
