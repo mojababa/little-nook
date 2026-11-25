@@ -116,6 +116,101 @@
       }
     }
   },
+  "Auth": {
+    "name": "Your name",
+    "email": "Email",
+    "password": "Password",
+    "newPassword": "New password",
+    "passwordHint": "At least 8 characters.",
+    "currency": "Currency",
+    "currencyHint": "All costs and prices in your workspace use this currency.",
+    "errors": {
+      "INVALID_EMAIL_OR_PASSWORD": "That email and password don't match. Try again or reset your password.",
+      "EMAIL_NOT_VERIFIED": "Confirm your email address first. We've sent you a new link.",
+      "PASSWORD_TOO_SHORT": "Your password needs at least 8 characters.",
+      "PASSWORD_TOO_LONG": "Your password is too long.",
+      "INVALID_EMAIL": "Enter a valid email address.",
+      "INVALID_CURRENCY": "Choose a currency from the list.",
+      "INVALID_TOKEN": "This link is invalid or has expired.",
+      "TOO_MANY_REQUESTS": "Too many attempts. Wait a moment and try again.",
+      "UNKNOWN": "Something went wrong. Please try again."
+    }
+  },
+  "SignupPage": {
+    "title": "Sign up",
+    "intro": "Create your Little Nook workspace.",
+    "submit": "Create account",
+    "submitting": "Creating account…",
+    "haveAccount": "Already have an account?",
+    "logIn": "Log in",
+    "agreement": "By signing up you agree to the <terms>Terms of Service</terms> and <privacy>Privacy Policy</privacy>."
+  },
+  "CheckEmailPage": {
+    "title": "Check your email",
+    "body": "We've sent you a link to confirm your email address. Open it on this device to start using Little Nook.",
+    "hint": "No email? Check your spam folder, or log in to get a new link.",
+    "logIn": "Log in"
+  },
+  "LoginPage": {
+    "title": "Log in",
+    "submit": "Log in",
+    "submitting": "Logging in…",
+    "forgotPassword": "Forgot your password?",
+    "noAccount": "New to Little Nook?",
+    "signUp": "Sign up",
+    "passwordReset": "Your password has been changed. Log in with your new password."
+  },
+  "ForgotPasswordPage": {
+    "title": "Reset your password",
+    "intro": "Enter your email and we'll send you a link to choose a new password.",
+    "submit": "Send reset link",
+    "submitting": "Sending…",
+    "sent": "If there's an account for that email, a reset link is on its way. Check your inbox.",
+    "backToLogin": "Back to log in"
+  },
+  "ResetPasswordPage": {
+    "title": "Choose a new password",
+    "submit": "Change password",
+    "submitting": "Changing password…",
+    "invalidLink": "This reset link is invalid or has expired.",
+    "requestNew": "Request a new link"
+  },
+  "AppNav": {
+    "label": "Main",
+    "home": "Home",
+    "inventory": "Inventory",
+    "patterns": "Patterns",
+    "projects": "Projects",
+    "offers": "Offers",
+    "finances": "Finances",
+    "settings": "Settings",
+    "logOut": "Log out"
+  },
+  "AppPages": {
+    "comingSoon": "This section is on its way.",
+    "home": {
+      "title": "Home",
+      "greeting": "Hi, {name}!",
+      "workspace": "You're in {workspace}. Amounts are in {currency}."
+    },
+    "inventory": { "title": "Inventory" },
+    "patterns": { "title": "Patterns" },
+    "projects": { "title": "Projects" },
+    "offers": { "title": "Offers" },
+    "finances": { "title": "Finances" },
+    "settings": { "title": "Settings" }
+  },
+  "Emails": {
+    "workspaceName": "{name}'s nook",
+    "verifyEmail": {
+      "subject": "Confirm your email for Little Nook",
+      "body": "Hi {name},\n\nWelcome to Little Nook! Confirm your email address to start using your workspace:\n\n{url}\n\nThe link is valid for one hour. If you didn't sign up, you can ignore this email."
+    },
+    "resetPassword": {
+      "subject": "Reset your Little Nook password",
+      "body": "Hi {name},\n\nWe received a request to reset your Little Nook password. Choose a new one here:\n\n{url}\n\nThe link is valid for one hour. If you didn't ask for this, you can ignore this email and your password stays the same."
+    }
+  },
   "OfflinePage": {
     "title": "You're offline",
     "body": "Little Nook needs an internet connection. Check your connection and try again.",

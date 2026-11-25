@@ -1,5 +1,7 @@
 import { defineConfig, devices } from "@playwright/test";
 
+import { e2eOutboxDir } from "./e2e/support/outbox-dir";
+
 const port = 3100;
 const baseURL = `http://localhost:${port}`;
 
@@ -20,5 +22,16 @@ export default defineConfig({
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 300_000,
+    env: {
+      ...(process.env as Record<string, string>),
+      BETTER_AUTH_URL: baseURL,
+      BETTER_AUTH_SECRET:
+        process.env.BETTER_AUTH_SECRET ?? "e2e-secret-not-for-production-use",
+      // Emails land here as JSON files; e2e/support/mailbox.ts reads them.
+      EMAIL_OUTBOX_DIR: e2eOutboxDir,
+      RESEND_API_KEY: "",
+      // Every test signs up and logs in from the same IP.
+      AUTH_DISABLE_RATE_LIMIT: "true",
+    },
   },
 });
