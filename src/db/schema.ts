@@ -9,6 +9,8 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 
+import type { Currency } from "@/lib/currencies";
+
 const timestamps = {
   createdAt: timestamp({ withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp({ withTimezone: true })
@@ -85,7 +87,7 @@ export const workspaces = pgTable("workspaces", {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
   /** ISO 4217 code. All money in the workspace is in this currency. */
-  currency: text().notNull(),
+  currency: text().$type<Currency>().notNull(),
   plan: workspacePlan().notNull().default("free"),
   ...timestamps,
 });

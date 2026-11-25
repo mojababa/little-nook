@@ -1,5 +1,7 @@
 import { useTranslations } from "next-intl";
+import { Suspense } from "react";
 
+import { SessionGate } from "@/components/app/session-gate";
 import type { AppSection } from "@/lib/app-sections";
 
 /** A section of the app that has no content yet. */
@@ -14,7 +16,11 @@ export function PlaceholderSection({
       <h1 className="text-2xl font-semibold tracking-tight">
         {t(`${section}.title`)}
       </h1>
-      <p className="text-muted-foreground">{t("comingSoon")}</p>
+      <Suspense>
+        <SessionGate>
+          <p className="text-muted-foreground">{t("comingSoon")}</p>
+        </SessionGate>
+      </Suspense>
     </main>
   );
 }

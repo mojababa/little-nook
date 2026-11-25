@@ -6,32 +6,25 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-import { Field, FormError, toErrorCode } from "./form-parts";
+import { Field, FormError, useAuthSubmit } from "./form-parts";
 
 export function ForgotPasswordForm() {
   const t = useTranslations("ForgotPasswordPage");
   const tAuth = useTranslations("Auth");
-  const [error, setError] = useState<ReturnType<typeof toErrorCode> | null>(
-    null,
-  );
-  const [pending, setPending] = useState(false);
+  const { error, pending, submit } = useAuthSubmit();
   const [sent, setSent] = useState(false);
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setPending(true);
-    setError(null);
-    const { error } = await authClient.requestPasswordReset({
-      email: String(form.get("email")),
-      redirectTo: "/reset-password",
-    });
-    setPending(false);
-    if (error) {
-      setError(toErrorCode(error));
-      return;
-    }
-    setSent(true);
+    return submit(
+      () =>
+        authClient.requestPasswordReset({
+          email: String(form.get("email")),
+          redirectTo: "/reset-password",
+        }),
+      () => setSent(true),
+    );
   }
 
   if (sent) {

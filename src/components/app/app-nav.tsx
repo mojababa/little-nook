@@ -15,7 +15,6 @@ import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 
 import { appSections, type AppSection } from "@/lib/app-sections";
-import { cn } from "@/lib/utils";
 
 const icons: Record<AppSection["key"], LucideIcon> = {
   home: House,
@@ -91,7 +90,7 @@ export function AppTabBarNav() {
   );
 }
 
-export function SettingsLink({ className }: { className?: string }) {
+export function SettingsLink() {
   const t = useTranslations("AppNav");
   const isCurrent = useIsCurrent();
   return (
@@ -99,10 +98,7 @@ export function SettingsLink({ className }: { className?: string }) {
       href="/settings"
       aria-label={t("settings")}
       aria-current={isCurrent("/settings") ? "page" : undefined}
-      className={cn(
-        "inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground aria-[current=page]:text-foreground",
-        className,
-      )}
+      className="inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground hover:bg-muted hover:text-foreground aria-[current=page]:text-foreground"
     >
       <Settings className="size-5" aria-hidden />
     </Link>

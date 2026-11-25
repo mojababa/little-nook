@@ -71,7 +71,8 @@ export function consoleMailer(): Mailer {
  * else the file outbox when `EMAIL_OUTBOX_DIR` is set, else the console.
  * Production deployments must configure Resend.
  */
-export function mailerFromEnv(env: NodeJS.ProcessEnv = process.env): Mailer {
+export function mailerFromEnv(): Mailer {
+  const env = process.env;
   if (env.RESEND_API_KEY) {
     const from = env.EMAIL_FROM;
     if (!from) throw new Error("EMAIL_FROM is not set");

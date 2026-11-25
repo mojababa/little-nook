@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 import { Button, buttonVariants } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-import { Field, FormError, toErrorCode } from "./form-parts";
+import { Field, FormError, useAuthSubmit } from "./form-parts";
 
 /**
  * The emailed reset link goes through /api/auth/reset-password/:token, which
@@ -20,10 +19,7 @@ export function ResetPasswordForm() {
   const tAuth = useTranslations("Auth");
   const router = useRouter();
   const token = useSearchParams().get("token");
-  const [error, setError] = useState<ReturnType<typeof toErrorCode> | null>(
-    null,
-  );
-  const [pending, setPending] = useState(false);
+  const { error, pending, submit } = useAuthSubmit();
 
   if (!token || error === "INVALID_TOKEN") {
     return (
@@ -41,21 +37,17 @@ export function ResetPasswordForm() {
     );
   }
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setPending(true);
-    setError(null);
-    const { error } = await authClient.resetPassword({
-      newPassword: String(form.get("password")),
-      token: token!,
-    });
-    if (error) {
-      setError(toErrorCode(error));
-      setPending(false);
-      return;
-    }
-    router.replace("/login?reset=done");
+    return submit(
+      () =>
+        authClient.resetPassword({
+          newPassword: String(form.get("password")),
+          token: token!,
+        }),
+      () => router.replace("/login?reset=done"),
+    );
   }
 
   return (

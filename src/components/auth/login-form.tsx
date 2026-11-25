@@ -2,39 +2,31 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { authClient } from "@/lib/auth-client";
 
-import { Field, FormError, toErrorCode } from "./form-parts";
+import { Field, FormError, useAuthSubmit } from "./form-parts";
 
 export function LoginForm() {
   const t = useTranslations("LoginPage");
   const tAuth = useTranslations("Auth");
   const router = useRouter();
-  const [error, setError] = useState<ReturnType<typeof toErrorCode> | null>(
-    null,
-  );
-  const [pending, setPending] = useState(false);
+  const { error, pending, submit } = useAuthSubmit();
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setPending(true);
-    setError(null);
-    const { error } = await authClient.signIn.email({
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-      // Where the fresh verification link leads if the email isn't verified yet.
-      callbackURL: "/home",
-    });
-    if (error) {
-      setError(toErrorCode(error));
-      setPending(false);
-      return;
-    }
-    router.replace("/home");
+    return submit(
+      () =>
+        authClient.signIn.email({
+          email: String(form.get("email")),
+          password: String(form.get("password")),
+          // Where the fresh verification link leads if the email isn't verified yet.
+          callbackURL: "/home",
+        }),
+      () => router.replace("/home"),
+    );
   }
 
   return (

@@ -72,6 +72,7 @@ test("visitor signs up, verifies their email, then logs out and back in", async 
 
   await logIn(page, email);
   await expect(page.getByText("Hi, Ana!")).toBeVisible();
+  await logOut(page);
 });
 
 test("user resets a forgotten password by email", async ({ page }) => {

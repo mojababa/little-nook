@@ -59,11 +59,11 @@ export async function createWorkspace(
 }
 
 /** A unique email address; its user is deleted when the test file finishes. */
-export function uniqueEmail(name = "maker"): string {
-  return `${name}-${randomUUID().slice(0, 8)}@${emailDomain}`;
+export function uniqueEmail(): string {
+  return `maker-${randomUUID().slice(0, 8)}@${emailDomain}`;
 }
 
-export const testBaseUrl = "http://localhost:3000";
+const testBaseUrl = "http://localhost:3000";
 
 /**
  * An auth instance on the test database. Emails it sends land in `outbox`

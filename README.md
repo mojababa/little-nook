@@ -84,7 +84,7 @@ export async function renameWorkspace(
 ### Auth and workspaces
 
 - Better Auth (`src/server/auth/auth.ts`) handles email + password, email verification and password reset; its endpoints are served at `/api/auth/*` and called from the browser through `src/lib/auth-client.ts`. A session only exists for a verified user.
-- Signing up creates the user's personal workspace in the currency they picked, with them as `owner` (`workspace_members`). Every user has exactly one workspace for now; `workspaceContextForUser()` resolves it.
+- Signing up creates the user's personal workspace in the currency they picked, with them as `owner` (`workspace_members`). Every user has exactly one workspace for now; `workspaceContextForUser()` resolves it. It and `createPersonalWorkspace()` take a `db` rather than a context, because they run before there is one.
 - `src/proxy.ts` redirects app routes to `/login` when there is no session cookie, but that is only an optimisation. **Every page, server action and route handler that reads or changes data calls `requireUser()` or `requireWorkspaceContext()` itself**, because layouts don't re-render on client-side navigation. Under Cache Components, those calls read the request, so the components making them sit inside `<Suspense>`.
 - The app's sections are listed in `src/lib/app-sections.ts`; a new section also needs its path in the proxy matcher.
 

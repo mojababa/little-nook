@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -14,41 +14,34 @@ import {
 import { signUpWithEmail } from "@/lib/auth-client";
 import { currencies } from "@/lib/currencies";
 
-import { Field, FormError, toErrorCode } from "./form-parts";
+import { Field, FormError, useAuthSubmit } from "./form-parts";
 
 export function SignupForm() {
   const t = useTranslations("SignupPage");
   const tAuth = useTranslations("Auth");
   const locale = useLocale();
   const router = useRouter();
-  const [error, setError] = useState<ReturnType<typeof toErrorCode> | null>(
-    null,
-  );
-  const [pending, setPending] = useState(false);
+  const { error, pending, submit } = useAuthSubmit();
 
   const currencyNames = useMemo(
     () => new Intl.DisplayNames([locale], { type: "currency" }),
     [locale],
   );
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+  function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    setPending(true);
-    setError(null);
-    const { error } = await signUpWithEmail({
-      name: String(form.get("name")),
-      email: String(form.get("email")),
-      password: String(form.get("password")),
-      currency: String(form.get("currency")),
-      callbackURL: "/home",
-    });
-    if (error) {
-      setError(toErrorCode(error));
-      setPending(false);
-      return;
-    }
-    router.push("/check-email");
+    return submit(
+      () =>
+        signUpWithEmail({
+          name: String(form.get("name")),
+          email: String(form.get("email")),
+          password: String(form.get("password")),
+          currency: String(form.get("currency")),
+          callbackURL: "/home",
+        }),
+      () => router.push("/check-email"),
+    );
   }
 
   return (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,14 +17,41 @@ const errorCodes = [
   "TOO_MANY_REQUESTS",
 ] as const;
 
-type ErrorCode = (typeof errorCodes)[number] | "UNKNOWN";
+export type ErrorCode = (typeof errorCodes)[number] | "UNKNOWN";
+
+type AuthClientError = { code?: string; status?: number };
 
 /** Maps an auth client error to one of the messages in `Auth.errors`. */
-export function toErrorCode(
-  error: { code?: string; status?: number } | null,
-): ErrorCode {
-  if (error?.status === 429) return "TOO_MANY_REQUESTS";
-  return errorCodes.find((code) => code === error?.code) ?? "UNKNOWN";
+function toErrorCode(error: AuthClientError): ErrorCode {
+  if (error.status === 429) return "TOO_MANY_REQUESTS";
+  return errorCodes.find((code) => code === error.code) ?? "UNKNOWN";
+}
+
+/**
+ * Submit state for an auth form. `submit` runs an auth client call: on failure
+ * it shows the error, on success it runs `onSuccess` and stays pending, so the
+ * form can't be sent twice while the page moves on.
+ */
+export function useAuthSubmit() {
+  const [error, setError] = useState<ErrorCode | null>(null);
+  const [pending, setPending] = useState(false);
+
+  async function submit(
+    call: () => Promise<{ error: AuthClientError | null }>,
+    onSuccess: () => void,
+  ) {
+    setPending(true);
+    setError(null);
+    const { error } = await call();
+    if (error) {
+      setError(toErrorCode(error));
+      setPending(false);
+      return;
+    }
+    onSuccess();
+  }
+
+  return { error, pending, submit };
 }
 
 export function FormError({ code }: { code: ErrorCode | null }) {

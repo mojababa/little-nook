@@ -8,10 +8,11 @@ import {
   SettingsLink,
 } from "@/components/app/app-nav";
 import { LogOutButton } from "@/components/app/log-out-button";
-import { requireUser } from "@/server/session";
+import { SessionGate } from "@/components/app/session-gate";
 
 // The logged-in app. The chrome is static; everything under it waits for the
-// session check, which redirects to /login when no one is logged in.
+// session check, which redirects to /login when no one is logged in. Layouts
+// don't re-render on client-side navigation, so pages check the session too.
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const t = useTranslations("Metadata");
   return (
@@ -50,9 +51,4 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
     </div>
   );
-}
-
-async function SessionGate({ children }: { children: React.ReactNode }) {
-  await requireUser();
-  return children;
 }
