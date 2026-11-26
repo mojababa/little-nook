@@ -6,6 +6,8 @@ import { Suspense } from "react";
 
 import { AuthCard } from "@/components/auth/auth-card";
 import { LoginForm, PasswordResetNotice } from "@/components/auth/login-form";
+import { GoogleSignInOption } from "@/components/auth/google-sign-in";
+import { isGoogleSignInEnabled } from "@/server/auth";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("LoginPage");
@@ -19,6 +21,7 @@ export default function LoginPage() {
       <Suspense>
         <PasswordResetNotice />
       </Suspense>
+      {isGoogleSignInEnabled() && <GoogleSignInOption returnTo="/login" />}
       <LoginForm />
       <div className="flex flex-col gap-2 text-sm text-muted-foreground">
         <Link href="/forgot-password" className="text-foreground underline">

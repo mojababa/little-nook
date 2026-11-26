@@ -22,17 +22,29 @@ Compose publishes Postgres on port **5433** so it doesn't clash with a locally i
 
 ### Environment variables
 
-| Variable             | Used by                                                                            |
-| -------------------- | ---------------------------------------------------------------------------------- |
-| `DATABASE_URL`       | The app, `pnpm db:*` scripts and E2E                                               |
-| `TEST_DATABASE_URL`  | Integration tests (rebuilt from migrations per run)                                |
-| `BETTER_AUTH_SECRET` | Signs sessions and email links (required at runtime)                               |
-| `BETTER_AUTH_URL`    | The app's public origin; defaults to the Vercel deployment URL, else `localhost`   |
-| `RESEND_API_KEY`     | Sends verification and password-reset email through Resend (required in prod)      |
-| `EMAIL_FROM`         | Sender address for that email, e.g. `Little Nook <hello@…>`                        |
-| `EMAIL_OUTBOX_DIR`   | Without Resend: write emails as JSON files here instead of printing them to stdout |
+| Variable               | Used by                                                                             |
+| ---------------------- | ----------------------------------------------------------------------------------- |
+| `DATABASE_URL`         | The app, `pnpm db:*` scripts and E2E                                                |
+| `TEST_DATABASE_URL`    | Integration tests (rebuilt from migrations per run)                                 |
+| `BETTER_AUTH_SECRET`   | Signs sessions and email links (required at runtime)                                |
+| `BETTER_AUTH_URL`      | The app's public origin; defaults to the Vercel deployment URL, else `localhost`    |
+| `RESEND_API_KEY`       | Sends verification and password-reset email through Resend (required in prod)       |
+| `EMAIL_FROM`           | Sender address for that email, e.g. `Little Nook <hello@…>`                         |
+| `EMAIL_OUTBOX_DIR`     | Without Resend: write emails as JSON files here instead of printing them to stdout  |
+| `GOOGLE_CLIENT_ID`     | Google OAuth client for “Continue with Google”; off unless both Google vars are set |
+| `GOOGLE_CLIENT_SECRET` | Its secret                                                                          |
 
 Locally, without `RESEND_API_KEY`, verification and reset emails (with their links) are printed in the `pnpm dev` output.
+
+### Google sign-in
+
+“Continue with Google” needs an OAuth client from the [Google Cloud console](https://console.cloud.google.com/apis/credentials):
+
+1. **OAuth consent screen** (Google Auth Platform → Branding): app name _Little Nook_, the app's home page, and the **Privacy Policy** and **Terms of Service** links: `<origin>/privacy` and `<origin>/terms`. Add the origin's domain under _Authorized domains_. Scopes: `openid`, `email`, `profile` only.
+2. **Credentials → Create OAuth client ID → Web application**, with an _Authorized redirect URI_ per environment: `<origin>/api/auth/callback/google` (e.g. `http://localhost:3000/api/auth/callback/google` locally).
+3. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. Pages read them at build time to show the button, so redeploy after setting them.
+
+Vercel previews get a new URL per deployment, which Google won't accept as a redirect URI, so Google sign-in only works on origins you have registered.
 
 ## Database and migrations
 
@@ -83,14 +95,15 @@ export async function renameWorkspace(
 
 ### Auth and workspaces
 
-- Better Auth (`src/server/auth/auth.ts`) handles email + password, email verification and password reset; its endpoints are served at `/api/auth/*` and called from the browser through `src/lib/auth-client.ts`. A session only exists for a verified user.
-- Signing up creates the user's personal workspace in the currency they picked, with them as `owner` (`workspace_members`). Every user has exactly one workspace for now; `workspaceContextForUser()` resolves it. It and `createPersonalWorkspace()` take a `db` rather than a context, because they run before there is one.
+- Better Auth (`src/server/auth/auth.ts`) handles email + password, email verification, password reset and Google sign-in; its endpoints are served at `/api/auth/*` and called from the browser through `src/lib/auth-client.ts`. A session only exists for a verified user.
+- Signing up with email creates the user's personal workspace in the currency they picked, with them as `owner` (`workspace_members`). Signing up with Google creates the user without one: `requireWorkspaceContext()` (and so every app page) sends them to `/welcome` to choose the currency, which calls `setUpPersonalWorkspace()`.
+- Account linking: continuing with Google links to an existing account with the same email only when Google and the account have both verified it; otherwise it fails with `account_not_linked` and creates nothing. Logged-in users link and unlink Google in settings (the Google address may differ); the only remaining way to log in can't be unlinked. The rules are tested in `src/server/auth/google.int.test.ts`. Every user has exactly one workspace for now; `workspaceContextForUser()` resolves it. It and `createPersonalWorkspace()` take a `db` rather than a context, because they run before there is one.
 - `src/proxy.ts` redirects app routes to `/login` when there is no session cookie, but that is only an optimisation. **Every page, server action and route handler that reads or changes data calls `requireUser()` or `requireWorkspaceContext()` itself**, because layouts don't re-render on client-side navigation. Under Cache Components, those calls read the request, so the components making them sit inside `<Suspense>`.
 - The app's sections are listed in `src/lib/app-sections.ts`; a new section also needs its path in the proxy matcher.
 
 ### Tests
 
-- **Integration tests** (`*.int.test.ts`, next to the module) call service functions against a real Postgres. Import `test` from `@tests/integration/fixtures`: it gives each test a fresh workspace as `ctx`. Use `createWorkspace()` for extra workspaces (e.g. isolation checks). For auth flows, `createTestAuth()` gives an auth instance on the test database whose emails land in an in-memory `outbox`; sign up with `signUp()` and `uniqueEmail()`. The database is rebuilt from the committed migrations at the start of each run.
+- **Integration tests** (`*.int.test.ts`, next to the module) call service functions against a real Postgres. Import `test` from `@tests/integration/fixtures`: it gives each test a fresh workspace as `ctx`. Use `createWorkspace()` for extra workspaces (e.g. isolation checks). For auth flows, `createTestAuth()` gives an auth instance on the test database whose emails land in an in-memory `outbox`; sign up with `signUp()` (or `signUpVerified()`) and `uniqueEmail()`. For Google, `tests/integration/google.ts` fakes Google's token endpoint and gives a cookie-keeping `createBrowser(auth)` that can `continueWithGoogle()` and `linkGoogle()` as any `googleProfile()`. The database is rebuilt from the committed migrations at the start of each run.
 - **Unit tests** (`*.test.ts`) are for pure modules with no database.
 - **E2E** (`e2e/*.spec.ts`) covers a few critical journeys only; business rules are tested at the service layer.
 

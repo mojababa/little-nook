@@ -24,13 +24,18 @@ export type AuthDeps = {
    * Only for E2E runs, where every test shares one IP.
    */
   disableRateLimit?: boolean;
+  /** Google OAuth client; without it, "Continue with Google" is off. */
+  google?: { clientId: string; clientSecret: string };
 };
+
+const emailSignUpPath = "/sign-up/email";
 
 /**
  * Better Auth configured for Little Nook: email + password with required email
- * verification and password reset by email. Signing up also creates the
- * user's personal workspace in the currency they chose (`currency` in the
- * sign-up body).
+ * verification and password reset by email, and "Continue with Google" when a
+ * Google client is configured. Signing up with email also creates the user's
+ * personal workspace in the currency they chose (`currency` in the sign-up
+ * body); Google sign-ups choose it on first login (/welcome).
  *
  * The app's instance comes from `getAuth()` (`@/server/auth`); tests build one
  * on the test database.
@@ -41,12 +46,19 @@ export function createAuth({
   baseURL,
   secret,
   disableRateLimit,
+  google,
 }: AuthDeps) {
-  // Emails go out in the default locale until users have a language preference.
+  // Emails and the workspace name are in the default locale until users have
+  // a language preference.
   const t = createTranslator({
     locale: defaultLocale,
     messages,
     namespace: "Emails",
+  });
+  const tWorkspace = createTranslator({
+    locale: defaultLocale,
+    messages,
+    namespace: "Workspace",
   });
 
   return betterAuth({
@@ -82,11 +94,40 @@ export function createAuth({
         });
       },
     },
+    account: {
+      // Continuing with Google links to an existing account with the same
+      // email only when both Google and the account have verified it (so
+      // nobody can pre-register someone else's address); otherwise the
+      // callback fails with `account_not_linked` and no account is created.
+      // These are Better Auth's defaults, spelled out because they are rules.
+      accountLinking: {
+        enabled: true,
+        trustedProviders: [],
+        requireLocalEmailVerified: true,
+        // Linking from settings happens while logged in, so the Google
+        // account may use another address.
+        allowDifferentEmails: true,
+        // Unlinking the only way to log in is refused.
+        allowUnlinkingAll: false,
+      },
+    },
+    ...(google && {
+      socialProviders: {
+        google: {
+          ...google,
+          prompt: "select_account",
+          // Google accounts almost always have a verified email; one that
+          // doesn't gets a verification email instead of a session.
+          requireEmailVerification: true,
+        },
+      },
+    }),
     databaseHooks: {
       user: {
         create: {
           async before(_user, ctx) {
-            if (!isCurrency(ctx?.body?.currency)) {
+            if (ctx?.path !== emailSignUpPath) return;
+            if (!isCurrency(ctx.body?.currency)) {
               throw APIError.from("BAD_REQUEST", {
                 code: "INVALID_CURRENCY",
                 message: "Choose a supported currency",
@@ -94,10 +135,12 @@ export function createAuth({
             }
           },
           async after(user, ctx) {
+            // Google sign-ups choose their currency on first login (/welcome).
+            if (ctx?.path !== emailSignUpPath) return;
             try {
               await createPersonalWorkspace(db, {
                 ownerId: user.id,
-                name: t("workspaceName", { name: user.name }),
+                name: tWorkspace("personalName", { name: user.name }),
                 currency: ctx!.body.currency,
               });
             } catch (error) {

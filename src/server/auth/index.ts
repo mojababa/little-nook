@@ -18,9 +18,21 @@ export function getAuth(): Auth {
       baseURL: appBaseUrl(),
       secret,
       disableRateLimit: process.env.AUTH_DISABLE_RATE_LIMIT === "true",
+      google: googleClient(),
     });
   }
   return auth;
+}
+
+/** Whether "Continue with Google" is configured (GOOGLE_CLIENT_ID/SECRET). */
+export function isGoogleSignInEnabled(): boolean {
+  return googleClient() !== undefined;
+}
+
+function googleClient() {
+  const clientId = process.env.GOOGLE_CLIENT_ID;
+  const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  return clientId && clientSecret ? { clientId, clientSecret } : undefined;
 }
 
 function appBaseUrl(): string {
