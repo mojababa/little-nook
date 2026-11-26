@@ -133,7 +133,17 @@
       "INVALID_CURRENCY": "Choose a currency from the list.",
       "INVALID_TOKEN": "This link is invalid or has expired.",
       "TOO_MANY_REQUESTS": "Too many attempts. Wait a moment and try again.",
+      "FAILED_TO_UNLINK_LAST_ACCOUNT": "That's your only way to log in, so it can't be removed.",
+      "SESSION_NOT_FRESH": "For your security, log out and log back in, then try again.",
       "UNKNOWN": "Something went wrong. Please try again."
+    },
+    "continueWithGoogle": "Continue with Google",
+    "or": "or",
+    "googleErrors": {
+      "account_not_linked": "There's already a Little Nook account with this email. Log in with your password (or reset it from the log-in page), then link Google in Settings.",
+      "email_not_verified": "Your Google account's email isn't verified yet. We've sent you a link to confirm it.",
+      "account_already_linked_to_different_user": "That Google account is already linked to another Little Nook account.",
+      "default": "Signing in with Google didn't work. Please try again."
     }
   },
   "SignupPage": {
@@ -159,6 +169,12 @@
     "noAccount": "New to Little Nook?",
     "signUp": "Sign up",
     "passwordReset": "Your password has been changed. Log in with your new password."
+  },
+  "WelcomePage": {
+    "title": "Welcome to Little Nook",
+    "intro": "One last step: choose the currency for your workspace.",
+    "submit": "Create my workspace",
+    "submitting": "Creating workspace…"
   },
   "ForgotPasswordPage": {
     "title": "Reset your password",
@@ -193,15 +209,38 @@
       "greeting": "Hi, {name}!",
       "workspace": "You're in {workspace}. Amounts are in {currency}."
     },
-    "inventory": { "title": "Inventory" },
-    "patterns": { "title": "Patterns" },
-    "projects": { "title": "Projects" },
-    "offers": { "title": "Offers" },
-    "finances": { "title": "Finances" },
-    "settings": { "title": "Settings" }
+    "inventory": {
+      "title": "Inventory"
+    },
+    "patterns": {
+      "title": "Patterns"
+    },
+    "projects": {
+      "title": "Projects"
+    },
+    "offers": {
+      "title": "Offers"
+    },
+    "finances": {
+      "title": "Finances"
+    },
+    "settings": {
+      "title": "Settings",
+      "signInMethods": {
+        "title": "Ways to log in",
+        "password": "Email and password",
+        "google": "Google",
+        "linked": "Linked",
+        "notLinked": "Not linked",
+        "link": "Link Google",
+        "linking": "Opening Google…",
+        "unlink": "Unlink",
+        "unlinking": "Unlinking…",
+        "onlyMethod": "This is your only way to log in, so it can't be unlinked."
+      }
+    }
   },
   "Emails": {
-    "workspaceName": "{name}'s nook",
     "verifyEmail": {
       "subject": "Confirm your email for Little Nook",
       "body": "Hi {name},\n\nWelcome to Little Nook! Confirm your email address to start using your workspace:\n\n{url}\n\nThe link is valid for one hour. If you didn't sign up, you can ignore this email."
@@ -215,5 +254,8 @@
     "title": "You're offline",
     "body": "Little Nook needs an internet connection. Check your connection and try again.",
     "retry": "Try again"
+  },
+  "Workspace": {
+    "personalName": "{name}'s nook"
   }
 }

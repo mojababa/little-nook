@@ -1,10 +1,15 @@
 "use client";
 
-import { useTranslations } from "next-intl";
-import { useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { useMemo, useState } from "react";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { currencies } from "@/lib/currencies";
 
 const errorCodes = [
   "INVALID_EMAIL_OR_PASSWORD",
@@ -15,6 +20,8 @@ const errorCodes = [
   "INVALID_CURRENCY",
   "INVALID_TOKEN",
   "TOO_MANY_REQUESTS",
+  "FAILED_TO_UNLINK_LAST_ACCOUNT",
+  "SESSION_NOT_FRESH",
 ] as const;
 
 export type ErrorCode = (typeof errorCodes)[number] | "UNKNOWN";
@@ -86,6 +93,37 @@ export function Field({
           {hint}
         </p>
       )}
+    </div>
+  );
+}
+
+/** The workspace currency picker, submitted as `currency`. */
+export function CurrencyField() {
+  const t = useTranslations("Auth");
+  const locale = useLocale();
+  const currencyNames = useMemo(
+    () => new Intl.DisplayNames([locale], { type: "currency" }),
+    [locale],
+  );
+  return (
+    <div className="flex flex-col gap-2">
+      <Label htmlFor="field-currency">{t("currency")}</Label>
+      <NativeSelect
+        id="field-currency"
+        name="currency"
+        defaultValue="EUR"
+        className="w-full [&_select]:h-10"
+        aria-describedby="field-currency-hint"
+      >
+        {currencies.map((code) => (
+          <NativeSelectOption key={code} value={code}>
+            {code} · {currencyNames.of(code)}
+          </NativeSelectOption>
+        ))}
+      </NativeSelect>
+      <p id="field-currency-hint" className="text-xs text-muted-foreground">
+        {t("currencyHint")}
+      </p>
     </div>
   );
 }

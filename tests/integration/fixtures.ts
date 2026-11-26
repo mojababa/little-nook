@@ -63,7 +63,7 @@ export function uniqueEmail(): string {
   return `maker-${randomUUID().slice(0, 8)}@${emailDomain}`;
 }
 
-const testBaseUrl = "http://localhost:3000";
+export const testBaseUrl = "http://localhost:3000";
 
 /**
  * An auth instance on the test database. Emails it sends land in `outbox`
@@ -75,6 +75,8 @@ export function createTestAuth() {
     db: testDb(),
     baseURL: testBaseUrl,
     secret: "integration-test-secret-not-for-production",
+    // Google's token endpoint is faked in tests: see ./google.ts.
+    google: { clientId: "test-google-client", clientSecret: "test-secret" },
     mailer: {
       async send(email) {
         outbox.push(email);
@@ -95,6 +97,23 @@ export function signUp(
   body: { name: string; email: string; password: string; currency?: string },
 ) {
   return auth.api.signUpEmail({ body });
+}
+
+/**
+ * Signs up with email and password and follows the emailed verification
+ * link, so the account can log in.
+ */
+export async function signUpVerified(
+  { auth, outbox }: ReturnType<typeof createTestAuth>,
+  body: { name: string; email: string; password: string; currency?: string },
+) {
+  const { user } = await signUp(auth, { currency: "EUR", ...body });
+  const verification = outbox.findLast((sent) => sent.to === body.email);
+  const link = verification?.text.match(/https?:\/\/\S+/)?.[0];
+  if (!link) throw new Error(`No verification link for ${body.email}`);
+  const response = await auth.handler(new Request(link));
+  if (response.status !== 302) throw new Error("Verification failed");
+  return user;
 }
 
 /**

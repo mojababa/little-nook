@@ -35,13 +35,30 @@ export async function requireUser() {
 
 /**
  * The workspace context for the logged-in user, passed to every service
- * function. Redirects to /login when no one is logged in.
+ * function. Redirects to /login when no one is logged in, and to /welcome
+ * when the user hasn't set up their workspace yet (Google sign-ups).
  */
 export const requireWorkspaceContext = cache(
   async (): Promise<MemberContext> => {
     const user = await requireUser();
     const ctx = await workspaceContextForUser(getDb(), user.id);
-    if (!ctx) throw new Error(`User ${user.id} has no workspace`);
+    if (!ctx) redirect("/welcome");
     return ctx;
   },
 );
+
+/** How the logged-in user can log in. Redirects to /login when no one is. */
+export async function requireSignInMethods() {
+  await requireUser();
+  const accounts = await getAuth().api.listUserAccounts({
+    headers: await headers(),
+  });
+  return {
+    hasPassword: accounts.some(
+      (account) => account.providerId === "credential",
+    ),
+    /** The id to unlink Google with, when it is linked. */
+    googleAccountId:
+      accounts.find((account) => account.providerId === "google")?.id ?? null,
+  };
+}

@@ -23,11 +23,12 @@ export function proxy(request: NextRequest) {
   return NextResponse.next();
 }
 
-// Must be literals (Next.js reads them at build time): "/" plus every entry of
-// appSections in src/lib/app-sections.ts.
+// Must be literals (Next.js reads them at build time): "/", the first-login
+// /welcome step, plus every entry of appSections in src/lib/app-sections.ts.
 export const config = {
   matcher: [
     "/",
+    "/welcome",
     "/home/:path*",
     "/inventory/:path*",
     "/patterns/:path*",
